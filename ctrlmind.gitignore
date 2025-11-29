@@ -1,0 +1,12 @@
+/vendor
+/node_modules
+.env
+.env.backup
+.env.local
+.env.production
+.env.development
+/storage/*.key
+/public/storage
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
