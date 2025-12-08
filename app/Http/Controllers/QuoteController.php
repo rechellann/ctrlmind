@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Quote;
 use App\Models\UserQuote;
-use App\Models\Resource; // ✅ import Resource model
+use App\Models\Resource; 
 use Illuminate\Support\Facades\Cache;
 
 class QuoteController extends Controller
@@ -13,36 +13,41 @@ class QuoteController extends Controller
     // Show all quotes saved by the current user
     public function index()
     {
-        $quotes = UserQuote::where('user_id', auth()->id())
-                           ->with('quote')
-                           ->orderByDesc('pinned')
-                           ->latest()
-                           ->get();
+        $userQuotes = UserQuote::where('user_id', auth()->id())
+                            ->with('quote')
+                            ->orderByDesc('pinned')   // pinned first
+                            ->orderBy('created_at', 'desc') // then newest saved
+                            ->get();
 
-        return view('quotes.index', compact('quotes'));
+        return view('quotes.index', compact('userQuotes'));
     }
 
     // Save/unsave toggle
     public function toggle(Request $request)
     {
-        $request->validate([
-            'quote_id' => 'required|exists:quotes,id',
-        ]);
+        $userId = auth()->id();
+        $quoteId = $request->quote_id;
 
-        $existing = UserQuote::where('user_id', auth()->id())
-                             ->where('quote_id', $request->quote_id)
-                             ->first();
+        $quote = Quote::find($quoteId);
+        if (!$quote) {
+            return redirect()->back()->with('error', 'Quote not found.');
+        }
+
+        $existing = UserQuote::where('user_id', $userId)
+                            ->where('quote_id', $quoteId)
+                            ->first();
 
         if ($existing) {
-            $existing->delete();
-            return redirect()->back()->with('success', 'Quote removed!');
+            $existing->delete(); // unsave
         } else {
             UserQuote::create([
-                'user_id' => auth()->id(),
-                'quote_id' => $request->quote_id,
+                'user_id' => $userId,
+                'quote_id' => $quoteId,
+                'pinned' => false,
             ]);
-            return redirect()->back()->with('success', 'Quote saved!');
         }
+
+        return redirect()->back();
     }
 
     // Admin uploads a new quote
@@ -62,14 +67,16 @@ class QuoteController extends Controller
     }
 
     // Pin/unpin quotes (max 3 per user)
-    public function pin(Quote $quote)
+    public function pin($quoteId)
     {
-        $userQuote = UserQuote::where('user_id', auth()->id())
-                              ->where('quote_id', $quote->id)
-                              ->firstOrFail();
+        $userId = auth()->id();
+
+        $userQuote = UserQuote::where('user_id', $userId)
+                            ->where('quote_id', $quoteId)
+                            ->firstOrFail();
 
         if (!$userQuote->pinned) {
-            $pinnedCount = UserQuote::where('user_id', auth()->id())
+            $pinnedCount = UserQuote::where('user_id', $userId)
                                     ->where('pinned', true)
                                     ->count();
             if ($pinnedCount >= 3) {
@@ -85,21 +92,20 @@ class QuoteController extends Controller
     // Dashboard
     public function dashboard()
     {
-        // Quote of the Day (cached)
         $today = now()->toDateString();
+
+        // Cache one random quote for the whole day
         $quote = Cache::remember("quote_of_the_day_{$today}", now()->addDay(), function () {
             return Quote::inRandomOrder()->first();
         });
 
-        // Saved quotes for current user
         $savedQuoteIds = UserQuote::where('user_id', auth()->id())->pluck('quote_id');
-
-        // Featured resources
         $featuredResources = Resource::where('is_featured', true)->take(3)->get();
 
         return view('dashboard', compact('quote', 'savedQuoteIds', 'featuredResources'));
     }
 
+    // Redirect to journal creation with quote
     public function redirectToJournal(Request $request)
     {
         $quoteId = $request->quote_id;

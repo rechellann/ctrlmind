@@ -9,23 +9,42 @@
                     <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
                 </div>
 
+                {{-- Consultant-only links --}}
+                    @if(auth()->user()->role === 'consultant')
+                        <x-nav-link :href="route('consultant.dashboard')" :active="request()->routeIs('consultant.dashboard')">
+                            Dashboard
+                        </x-nav-link>
+                        <x-nav-link :href="route('consultant.notifications')" :active="request()->routeIs('consultant.notifications')">
+                            Notifications
+                        </x-nav-link>
+                        <x-nav-link :href="route('consultant.shared-journals')" :active="request()->routeIs('consultant.shared-journals')">
+                            Shared Journals
+                        </x-nav-link>
+
+                        <form action="{{ route('consultant.search') }}" method="GET" class="ml-4">
+                            <input type="text" name="query" placeholder="Search clients…" 
+                                class="px-3 py-1 rounded border border-gray-300 focus:outline-none focus:ring focus:border-blue-400 text-sm">
+                            <button type="submit" class="ml-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                                Search
+                            </button>
+                        </form>
+                    @endif
+
                 <!-- Navigation Links -->
-                <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                    {{ __('Dashboard') }}
-                </x-nav-link>
-
-                <x-nav-link :href="route('journal.index')" :active="request()->is('journal') || request()->is('journal/archived')">
-                    {{ __('Journal') }}
-                </x-nav-link>
-
-                <x-nav-link :href="route('quotes.index')" :active="request()->routeIs('quotes.index')">
-                    {{ __('Saved Quotes') }}
-                </x-nav-link>
-
-                <x-nav-link :href="route('chat.index')" :active="request()->routeIs('chat.index')">
-                    {{ __('Chat') }}
-                </x-nav-link>
-
+                @if(auth()->user()->role === 'user')
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                        {{ __('Dashboard') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('journal.index')" :active="request()->is('journal') || request()->is('journal/archived')">
+                        {{ __('Journal') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('quotes.index')" :active="request()->routeIs('quotes.index')">
+                        {{ __('Saved Quotes') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('chat.index')" :active="request()->routeIs('chat.index')">
+                        {{ __('Chat') }}
+                    </x-nav-link>
+                @endif
             </div>
 
             <!-- Right side: Settings Dropdown -->
@@ -74,21 +93,20 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
-
-            <x-responsive-nav-link :href="route('journal.index')" :active="request()->is('journal') || request()->is('journal/archived')">
-                {{ __('Journal') }}
-            </x-responsive-nav-link>
-
-            <x-responsive-nav-link :href="route('quotes.index')" :active="request()->routeIs('quotes.index')">
-                {{ __('Saved Quotes') }}
-            </x-responsive-nav-link>
-
-            <x-responsive-nav-link :href="route('chat.index')" :active="request()->routeIs('chat.index')">
-                {{ __('Chat') }}
-            </x-responsive-nav-link>
+            @if(auth()->user()->role === 'user')
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    {{ __('Dashboard') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('journal.index')" :active="request()->is('journal') || request()->is('journal/archived')">
+                    {{ __('Journal') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('quotes.index')" :active="request()->routeIs('quotes.index')">
+                    {{ __('Saved Quotes') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('chat.index')" :active="request()->routeIs('chat.index')">
+                    {{ __('Chat') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

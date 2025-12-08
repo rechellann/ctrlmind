@@ -11,11 +11,8 @@ class JournalController extends Controller
     // Show the "create journal entry" form with a quote (optional)
     public function create(Request $request)
     {
-        $quote = null;
-
-        if ($request->has('quote_id')) {
-            $quote = Quote::findOrFail($request->quote_id);
-        }
+        $quoteId = $request->quote_id;
+        $quote = Quote::find($quoteId);
 
         return view('journal.create', compact('quote'));
     }
@@ -75,8 +72,7 @@ class JournalController extends Controller
         $entry->archived_at = now('Asia/Manila'); // ✅ set timestamp here
         $entry->save();
 
-        return redirect()->route('journal.archived') // ✅ match Blade route
-            ->with('success', 'Entry archived successfully.');
+        return redirect()->back()->with('success', 'Entry archived successfully.');
     }
 
     // Restore an archived entry
@@ -90,7 +86,7 @@ class JournalController extends Controller
         $entry->archived_at = null; // ✅ clear timestamp when restoring
         $entry->save();
 
-        return redirect()->route('journal.index')->with('success', 'Entry restored.');
+        return redirect()->back()->with('success', 'Entry restored.');
     }
 
     // Toggle sharing with consultant

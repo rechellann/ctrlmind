@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::table('journal_entries', function (Blueprint $table) {
             // Make quote_id nullable
-            $table->unsignedBigInteger('quote_id')->nullable()->change();
+            $table->unsignedBigInteger('quote_id')->default(1)->change();
 
             // Add soft deletes
             $table->softDeletes();
@@ -22,7 +22,7 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('journal_entries', function (Blueprint $table) {
-            $table->unsignedBigInteger('quote_id')->nullable(false)->change();
+            $table->unsignedBigInteger('quote_id')->default(1)->change();
             $table->dropSoftDeletes();
             $table->dropColumn('shared_with_consultant');
         });

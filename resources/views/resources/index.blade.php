@@ -29,7 +29,6 @@
                         <p class="text-gray-400">No resources found.</p>
                     @endforelse
                 </div>
-
                 <div class="mt-6">
                     {{ $resources->links() }}
                 </div>
